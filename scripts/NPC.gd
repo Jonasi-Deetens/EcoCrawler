@@ -35,10 +35,16 @@ func _init():
 
 func _ready():
 	_setup_npc_components()
-	_connect_signals()
 
 func _setup_npc_components():
 	"""Set up NPC visual and interaction components"""
+	print("=== Setting up NPC components for ", npc_name, " ===")
+	
+	# Set collision layers for the CharacterBody2D
+	collision_layer = 2  # NPC physics layer
+	collision_mask = 0   # NPCs don't need to collide with anything
+	print("Set collision layers for ", npc_name)
+	
 	# Collision for physics
 	collision_shape = CollisionShape2D.new()
 	var shape = RectangleShape2D.new()
@@ -50,6 +56,7 @@ func _setup_npc_components():
 	sprite = Sprite2D.new()
 	if sprite_texture:
 		sprite.texture = sprite_texture
+		add_child(sprite)
 	else:
 		# Default colored rectangle if no texture
 		var color_rect = ColorRect.new()
@@ -57,13 +64,16 @@ func _setup_npc_components():
 		color_rect.position = Vector2(-16, -16)
 		color_rect.color = _get_npc_color()
 		add_child(color_rect)
-		return
 	
-	add_child(sprite)
+	print("Created visual representation for ", npc_name)
 	
 	# Interaction area
 	interaction_area = Area2D.new()
 	interaction_area.name = "InteractionArea"
+	interaction_area.collision_layer = 8  # NPC interaction layer
+	interaction_area.collision_mask = 1   # Detect player layer
+	interaction_area.monitoring = true
+	interaction_area.monitorable = true
 	
 	var area_collision = CollisionShape2D.new()
 	var area_shape = CircleShape2D.new()
@@ -71,6 +81,13 @@ func _setup_npc_components():
 	area_collision.shape = area_shape
 	interaction_area.add_child(area_collision)
 	add_child(interaction_area)
+	
+	print("Created interaction area for ", npc_name, " with radius ", interaction_radius)
+	
+	# Connect signals immediately after creating the interaction area
+	interaction_area.body_entered.connect(_on_player_entered)
+	interaction_area.body_exited.connect(_on_player_exited)
+	print("Connected signals for ", npc_name, " interaction area")
 	
 	# Interaction prompt
 	prompt_label = Label.new()
@@ -81,11 +98,7 @@ func _setup_npc_components():
 	prompt_label.modulate = Color(1, 1, 1, 0)  # Start invisible
 	add_child(prompt_label)
 
-func _connect_signals():
-	"""Connect interaction area signals"""
-	if interaction_area:
-		interaction_area.body_entered.connect(_on_player_entered)
-		interaction_area.body_exited.connect(_on_player_exited)
+
 
 func _get_npc_color() -> Color:
 	"""Get default color based on NPC type"""
@@ -100,18 +113,23 @@ func _input(event):
 	if not can_interact or not is_player_nearby or is_interacting:
 		return
 	
-	if event.is_action_pressed("ui_accept"):  # E key or Enter
+	if event.is_action_pressed("interact"):  # E key
+		print("Interaction triggered with ", npc_name)
 		start_interaction()
 
 func _on_player_entered(body: Node2D):
 	"""Handle player entering interaction range"""
+	print("Body entered ", npc_name, " area: ", body.name)
 	if body.name == "Player":
+		print("Player entered ", npc_name, " interaction range")
 		is_player_nearby = true
 		_show_interaction_prompt()
 
 func _on_player_exited(body: Node2D):
 	"""Handle player leaving interaction range"""
+	print("Body exited ", npc_name, " area: ", body.name)
 	if body.name == "Player":
+		print("Player exited ", npc_name, " interaction range")
 		is_player_nearby = false
 		_hide_interaction_prompt()
 		if is_interacting:

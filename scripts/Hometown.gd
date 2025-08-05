@@ -47,6 +47,7 @@ func _setup_npcs():
 	])
 	add_child(weapon_vendor)
 	npcs.append(weapon_vendor)
+	print("Added weapon vendor: ", weapon_vendor.npc_name, " at ", weapon_vendor.position)
 	
 	# Potion vendor
 	var potion_vendor = VendorNPC.new()
@@ -66,6 +67,7 @@ func _setup_npcs():
 	potion_vendor.add_shop_item(Item.create_consumable("energy_drink", "Energy Drink", "boost_stamina", 20), 5)
 	add_child(potion_vendor)
 	npcs.append(potion_vendor)
+	print("Added potion vendor: ", potion_vendor.npc_name, " at ", potion_vendor.position)
 	
 	# General goods vendor
 	var general_vendor = VendorNPC.new()
@@ -79,6 +81,7 @@ func _setup_npcs():
 	])
 	add_child(general_vendor)
 	npcs.append(general_vendor)
+	print("Added general vendor: ", general_vendor.npc_name, " at ", general_vendor.position)
 	
 	# Town guard (non-vendor NPC)
 	var guard = NPC.new()
@@ -93,6 +96,7 @@ func _setup_npcs():
 	])
 	add_child(guard)
 	npcs.append(guard)
+	print("Added guard: ", guard.npc_name, " at ", guard.position)
 	
 	# Townsperson
 	var citizen = NPC.new()
@@ -107,6 +111,7 @@ func _setup_npcs():
 	])
 	add_child(citizen)
 	npcs.append(citizen)
+	print("Added citizen: ", citizen.npc_name, " at ", citizen.position)
 
 func _connect_signals():
 	"""Connect all necessary signals"""
@@ -117,16 +122,11 @@ func _connect_signals():
 	for npc in npcs:
 		if npc is VendorNPC:
 			var vendor = npc as VendorNPC
-			vendor.shop_opened.connect(_on_vendor_shop_opened)
-			vendor.shop_closed.connect(_on_vendor_shop_closed)
+			# Connect to PlayerManager instead of local handlers
+			vendor.shop_opened.connect(player_manager._on_vendor_shop_opened)
+			vendor.shop_closed.connect(player_manager._on_vendor_shop_closed)
 
-func _on_vendor_shop_opened(vendor: VendorNPC):
-	"""Handle vendor shop opening"""
-	print("Shop opened: ", vendor.shop_name)
 
-func _on_vendor_shop_closed(vendor: VendorNPC):
-	"""Handle vendor shop closing"""
-	print("Shop closed: ", vendor.shop_name)
 
 func _input(event):
 	"""Handle global input events"""

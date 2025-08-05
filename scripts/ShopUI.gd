@@ -31,63 +31,76 @@ func _setup_ui():
 	"""Set up the shop UI components"""
 	# Main panel
 	shop_panel = Panel.new()
-	shop_panel.size = Vector2(800, 600)
-	shop_panel.position = Vector2(100, 50)
+	shop_panel.size = Vector2(900, 650)
+	shop_panel.position = Vector2(50, 25)
 	add_child(shop_panel)
 	
 	# Title
 	shop_title_label = Label.new()
 	shop_title_label.text = "Shop"
-	shop_title_label.position = Vector2(20, 10)
+	shop_title_label.position = Vector2(20, 15)
+	shop_title_label.size = Vector2(400, 30)
 	shop_title_label.add_theme_font_size_override("font_size", 24)
 	shop_panel.add_child(shop_title_label)
 	
 	# Close button
 	close_button = Button.new()
 	close_button.text = "Close"
-	close_button.size = Vector2(80, 30)
-	close_button.position = Vector2(700, 10)
+	close_button.size = Vector2(80, 35)
+	close_button.position = Vector2(800, 15)
 	close_button.pressed.connect(_on_close_pressed)
 	shop_panel.add_child(close_button)
 	
-	# Vendor section
+	# Vendor section header
 	var vendor_label = Label.new()
 	vendor_label.text = "Vendor Items (Click to Buy)"
-	vendor_label.position = Vector2(20, 50)
-	vendor_label.add_theme_font_size_override("font_size", 18)
+	vendor_label.position = Vector2(20, 60)
+	vendor_label.size = Vector2(300, 25)
+	vendor_label.add_theme_font_size_override("font_size", 16)
 	shop_panel.add_child(vendor_label)
 	
+	# Vendor gold display
 	vendor_gold_label = Label.new()
 	vendor_gold_label.text = "Vendor Gold: 0"
-	vendor_gold_label.position = Vector2(300, 50)
+	vendor_gold_label.position = Vector2(20, 320)
+	vendor_gold_label.size = Vector2(200, 25)
+	vendor_gold_label.add_theme_font_size_override("font_size", 14)
 	shop_panel.add_child(vendor_gold_label)
 	
+	# Vendor items scroll area
 	var vendor_scroll = ScrollContainer.new()
-	vendor_scroll.position = Vector2(20, 80)
-	vendor_scroll.size = Vector2(360, 200)
+	vendor_scroll.position = Vector2(20, 90)
+	vendor_scroll.size = Vector2(400, 220)
 	shop_panel.add_child(vendor_scroll)
 	
 	vendor_items_container = VBoxContainer.new()
+	vendor_items_container.add_theme_constant_override("separation", 10)  # Add 10px spacing between items
 	vendor_scroll.add_child(vendor_items_container)
 	
-	# Player section
+	# Player section header
 	var player_label = Label.new()
 	player_label.text = "Your Items (Click to Sell)"
-	player_label.position = Vector2(420, 50)
-	player_label.add_theme_font_size_override("font_size", 18)
+	player_label.position = Vector2(460, 60)
+	player_label.size = Vector2(300, 25)
+	player_label.add_theme_font_size_override("font_size", 16)
 	shop_panel.add_child(player_label)
 	
+	# Player gold display
 	player_gold_label = Label.new()
 	player_gold_label.text = "Your Gold: 0"
-	player_gold_label.position = Vector2(420, 300)
+	player_gold_label.position = Vector2(460, 320)
+	player_gold_label.size = Vector2(200, 25)
+	player_gold_label.add_theme_font_size_override("font_size", 14)
 	shop_panel.add_child(player_gold_label)
 	
+	# Player items scroll area
 	var player_scroll = ScrollContainer.new()
-	player_scroll.position = Vector2(420, 80)
-	player_scroll.size = Vector2(360, 200)
+	player_scroll.position = Vector2(460, 90)
+	player_scroll.size = Vector2(400, 220)
 	shop_panel.add_child(player_scroll)
 	
 	player_items_container = VBoxContainer.new()
+	player_items_container.add_theme_constant_override("separation", 10)  # Add 10px spacing between items
 	player_scroll.add_child(player_items_container)
 
 func open_shop(vendor: VendorNPC, inventory: Inventory):
@@ -127,50 +140,61 @@ func _update_shop_display():
 func _create_vendor_item_entry(slot: Inventory.InventorySlot):
 	"""Create UI entry for vendor item"""
 	var item_panel = Panel.new()
-	item_panel.size = Vector2(340, 80)
+	item_panel.size = Vector2(380, 90)
+	item_panel.custom_minimum_size = Vector2(380, 100)  # Add extra space for separation
 	vendor_items_container.add_child(item_panel)
 	
 	# Item icon/symbol
 	var icon_label = Label.new()
 	icon_label.text = slot.item.get_type_icon()
 	icon_label.position = Vector2(10, 10)
-	icon_label.add_theme_font_size_override("font_size", 32)
+	icon_label.size = Vector2(40, 40)
+	icon_label.add_theme_font_size_override("font_size", 28)
 	icon_label.modulate = slot.item.get_rarity_color()
 	item_panel.add_child(icon_label)
 	
-	# Item name and description
+	# Item name
 	var name_label = Label.new()
 	name_label.text = slot.item.item_name
-	name_label.position = Vector2(60, 10)
-	name_label.add_theme_font_size_override("font_size", 16)
+	name_label.position = Vector2(60, 5)
+	name_label.size = Vector2(200, 20)
+	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.clip_contents = true
 	item_panel.add_child(name_label)
 	
+	# Item description
 	var desc_label = Label.new()
 	desc_label.text = slot.item.description
-	desc_label.position = Vector2(60, 30)
-	desc_label.add_theme_font_size_override("font_size", 12)
+	desc_label.position = Vector2(60, 25)
+	desc_label.size = Vector2(200, 15)
+	desc_label.add_theme_font_size_override("font_size", 10)
 	desc_label.modulate = Color(0.8, 0.8, 0.8, 1)
+	desc_label.clip_contents = true
 	item_panel.add_child(desc_label)
 	
-	# Quantity and price
+	# Quantity
 	var quantity_label = Label.new()
 	quantity_label.text = "Stock: " + str(slot.quantity)
-	quantity_label.position = Vector2(60, 50)
+	quantity_label.position = Vector2(60, 45)
+	quantity_label.size = Vector2(80, 20)
+	quantity_label.add_theme_font_size_override("font_size", 11)
 	item_panel.add_child(quantity_label)
 	
+	# Price
 	var price_label = Label.new()
 	var sell_price = current_vendor.get_sell_price(slot.item)
-	price_label.text = str(sell_price) + " gold"
-	price_label.position = Vector2(200, 50)
-	price_label.add_theme_font_size_override("font_size", 14)
+	price_label.text = str(sell_price) + "g"
+	price_label.position = Vector2(150, 45)
+	price_label.size = Vector2(60, 20)
+	price_label.add_theme_font_size_override("font_size", 12)
 	price_label.modulate = Color(1, 0.8, 0, 1)  # Gold color
 	item_panel.add_child(price_label)
 	
 	# Buy button
 	var buy_button = Button.new()
 	buy_button.text = "Buy"
-	buy_button.size = Vector2(60, 30)
-	buy_button.position = Vector2(270, 25)
+	buy_button.size = Vector2(70, 35)
+	buy_button.position = Vector2(300, 30)
 	buy_button.pressed.connect(_on_buy_item.bind(slot.item, 1))
 	
 	# Disable if can't afford or no stock
@@ -178,54 +202,70 @@ func _create_vendor_item_entry(slot: Inventory.InventorySlot):
 		buy_button.disabled = true
 	
 	item_panel.add_child(buy_button)
+	
+	# Add spacer for separation
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 15)
+	vendor_items_container.add_child(spacer)
 
 func _create_player_item_entry(slot: Inventory.InventorySlot):
 	"""Create UI entry for player item"""
 	var item_panel = Panel.new()
-	item_panel.size = Vector2(340, 80)
+	item_panel.size = Vector2(380, 90)
+	item_panel.custom_minimum_size = Vector2(380, 100)  # Add extra space for separation
 	player_items_container.add_child(item_panel)
 	
 	# Item icon/symbol
 	var icon_label = Label.new()
 	icon_label.text = slot.item.get_type_icon()
 	icon_label.position = Vector2(10, 10)
-	icon_label.add_theme_font_size_override("font_size", 32)
+	icon_label.size = Vector2(40, 40)
+	icon_label.add_theme_font_size_override("font_size", 28)
 	icon_label.modulate = slot.item.get_rarity_color()
 	item_panel.add_child(icon_label)
 	
-	# Item name and description
+	# Item name
 	var name_label = Label.new()
 	name_label.text = slot.item.item_name
-	name_label.position = Vector2(60, 10)
-	name_label.add_theme_font_size_override("font_size", 16)
+	name_label.position = Vector2(60, 5)
+	name_label.size = Vector2(200, 20)
+	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.clip_contents = true
 	item_panel.add_child(name_label)
 	
+	# Item description
 	var desc_label = Label.new()
 	desc_label.text = slot.item.description
-	desc_label.position = Vector2(60, 30)
-	desc_label.add_theme_font_size_override("font_size", 12)
+	desc_label.position = Vector2(60, 25)
+	desc_label.size = Vector2(200, 15)
+	desc_label.add_theme_font_size_override("font_size", 10)
 	desc_label.modulate = Color(0.8, 0.8, 0.8, 1)
+	desc_label.clip_contents = true
 	item_panel.add_child(desc_label)
 	
-	# Quantity and sell price
+	# Quantity
 	var quantity_label = Label.new()
 	quantity_label.text = "Owned: " + str(slot.quantity)
-	quantity_label.position = Vector2(60, 50)
+	quantity_label.position = Vector2(60, 45)
+	quantity_label.size = Vector2(80, 20)
+	quantity_label.add_theme_font_size_override("font_size", 11)
 	item_panel.add_child(quantity_label)
 	
+	# Sell price
 	var price_label = Label.new()
 	var buy_price = current_vendor.get_buy_price(slot.item)
-	price_label.text = str(buy_price) + " gold each"
-	price_label.position = Vector2(160, 50)
-	price_label.add_theme_font_size_override("font_size", 14)
+	price_label.text = str(buy_price) + "g"
+	price_label.position = Vector2(150, 45)
+	price_label.size = Vector2(60, 20)
+	price_label.add_theme_font_size_override("font_size", 12)
 	price_label.modulate = Color(0.8, 1, 0.8, 1)  # Light green
 	item_panel.add_child(price_label)
 	
 	# Sell button
 	var sell_button = Button.new()
 	sell_button.text = "Sell"
-	sell_button.size = Vector2(60, 30)
-	sell_button.position = Vector2(270, 25)
+	sell_button.size = Vector2(70, 35)
+	sell_button.position = Vector2(300, 30)
 	sell_button.pressed.connect(_on_sell_item.bind(slot.item, 1))
 	
 	# Disable if vendor can't afford
@@ -233,6 +273,11 @@ func _create_player_item_entry(slot: Inventory.InventorySlot):
 		sell_button.disabled = true
 	
 	item_panel.add_child(sell_button)
+	
+	# Add spacer for separation
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 15)
+	player_items_container.add_child(spacer)
 
 func _on_buy_item(item: Item, quantity: int):
 	"""Handle buying item from vendor"""

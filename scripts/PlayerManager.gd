@@ -176,6 +176,16 @@ func _on_transaction_completed(item: Item, quantity: int, is_purchase: bool):
 	else:
 		print("Player sold ", quantity, "x ", item.item_name)
 
+func _on_vendor_shop_opened(vendor: VendorNPC):
+	"""Handle when a vendor opens their shop"""
+	print("PlayerManager: Opening shop for ", vendor.shop_name)
+	open_shop(vendor)
+
+func _on_vendor_shop_closed(vendor: VendorNPC):
+	"""Handle when a vendor closes their shop"""
+	print("PlayerManager: Closing shop for ", vendor.shop_name)
+	close_shop()
+
 func register_npc_interaction(npc: NPC):
 	"""Register NPC for interaction"""
 	current_interacting_npc = npc
