@@ -16,6 +16,9 @@ signal back_to_menu_requested
 func _ready():
 	print("Hometown: Initializing village...")
 	
+	# Create visual design first
+	_setup_visual_design()
+	
 	# Set up player management systems
 	_setup_player_manager()
 	
@@ -26,6 +29,12 @@ func _ready():
 	_connect_signals()
 	
 	print("Hometown: Village ready with vendors and NPCs!")
+
+func _setup_visual_design():
+	"""Set up the visual design for the hometown"""
+	var visuals = HometownVisuals.new()
+	visuals.name = "HometownVisuals"
+	add_child(visuals)
 
 func _setup_player_manager():
 	"""Set up player management systems"""

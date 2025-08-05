@@ -25,6 +25,7 @@ signal transaction_completed(item: Item, quantity: int, is_purchase: bool)
 
 func _ready():
 	_setup_ui()
+	z_index = 100  # Highest z-index for UI overlay
 	hide()
 
 func _setup_ui():

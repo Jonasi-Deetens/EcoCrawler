@@ -43,7 +43,8 @@ func _setup_npc_components():
 	# Set collision layers for the CharacterBody2D
 	collision_layer = 2  # NPC physics layer
 	collision_mask = 0   # NPCs don't need to collide with anything
-	print("Set collision layers for ", npc_name)
+	z_index = 16  # Above player but below UI
+	print("Set collision layers and z-index for ", npc_name)
 	
 	# Collision for physics
 	collision_shape = CollisionShape2D.new()
@@ -96,6 +97,7 @@ func _setup_npc_components():
 	prompt_label.size = Vector2(100, 20)
 	prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	prompt_label.modulate = Color(1, 1, 1, 0)  # Start invisible
+	prompt_label.z_index = 20  # High z-index for UI elements
 	add_child(prompt_label)
 
 

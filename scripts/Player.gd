@@ -10,6 +10,10 @@ func _ready():
 	collision_layer = 1  # Player layer
 	collision_mask = 6   # Collide with walls (layer 2) and doors (layer 4) - includes NPCs on layer 2
 	print("Player collision layers set: layer=1, mask=6 (walls+doors+NPCs)")
+	
+	# Set z-index to ensure player is above all visual elements but below UI
+	z_index = 15
+	print("Player z-index set to: ", z_index)
 
 func _physics_process(_delta):
 	# Handle movement input
