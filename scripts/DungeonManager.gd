@@ -86,9 +86,11 @@ func set_player(player_node: CharacterBody2D):
 	player = player_node
 	# Position player in starting room on starting floor
 	if current_room:
-		var target_pos = current_room.room_position + Vector2(576, 324)
+		# Position player at the center of the starting room
+		var room_center = Vector2(current_room.layout.room_size.x / 2.0, current_room.layout.room_size.y / 2.0)
+		var target_pos = current_room.room_position + room_center
 		player.position = target_pos
-		print("Player positioned at: ", target_pos, " (room pos: ", current_room.room_position, ")")
+		print("Player positioned at room center: ", target_pos, " (room pos: ", current_room.room_position, ")")
 	else:
 		print("ERROR: No current room when setting player position!")
 

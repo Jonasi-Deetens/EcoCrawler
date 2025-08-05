@@ -213,8 +213,13 @@ func _on_door_entered(body: Node2D, direction: String, _blocker: StaticBody2D):
 func _transition_to_room(player: Node2D, target_room: RoomInstance, from_direction: String):
 	"""Handle transition to another room"""
 	# Calculate spawn position in target room
-	var spawn_offset = _get_spawn_offset(from_direction)
+	var spawn_offset = target_room._get_spawn_offset(from_direction)
 	var target_pos = target_room.room_position + spawn_offset
+	
+	print("  Player transitioning from ", from_direction, " direction")
+	print("  Target room position: ", target_room.room_position)
+	print("  Spawn offset: ", spawn_offset)
+	print("  Final player position: ", target_pos)
 	
 	player.position = target_pos
 	target_room.room_entered.emit(target_room)
@@ -222,15 +227,38 @@ func _transition_to_room(player: Node2D, target_room: RoomInstance, from_directi
 
 func _get_spawn_offset(from_direction: String) -> Vector2:
 	"""Get spawn position offset within room based on entry direction"""
-	var room_size = layout.room_size
-	var margin = layout.floor_margin + 50  # Extra margin from floor edge
+	var spawn_distance = 100  # Distance from the door to spawn the player
 	
-	match from_direction:
-		"north": return Vector2(room_size.x/2, room_size.y - margin)  # Spawn near south
-		"south": return Vector2(room_size.x/2, margin)  # Spawn near north
-		"east": return Vector2(margin, room_size.y/2)  # Spawn near west
-		"west": return Vector2(room_size.x - margin, room_size.y/2)  # Spawn near east
-		_: return Vector2(room_size.x/2, room_size.y/2)  # Center
+	# Get the opposite direction (where we came from)
+	var entry_door = _get_opposite_direction(from_direction)
+	
+	# If we have a door position for the entry door, spawn near it
+	if layout.door_positions.has(entry_door):
+		var door_pos = layout.door_positions[entry_door]
+		print("  Spawning near ", entry_door, " door at ", door_pos)
+		
+		match entry_door:
+			"north":  # Came from north door, spawn south of it (inside room)
+				return Vector2(door_pos.x, door_pos.y + spawn_distance)
+			"south":  # Came from south door, spawn north of it (inside room)
+				return Vector2(door_pos.x, door_pos.y - spawn_distance)
+			"east":   # Came from east door, spawn west of it (inside room)
+				return Vector2(door_pos.x - spawn_distance, door_pos.y)
+			"west":   # Came from west door, spawn east of it (inside room)
+				return Vector2(door_pos.x + spawn_distance, door_pos.y)
+	
+	# Fallback to room center if door position not found
+	print("  No door position found for ", entry_door, ", spawning at center")
+	return Vector2(layout.room_size.x / 2.0, layout.room_size.y / 2.0)
+
+func _get_opposite_direction(direction: String) -> String:
+	"""Get the opposite direction"""
+	match direction:
+		"north": return "south"
+		"south": return "north"
+		"east": return "west"
+		"west": return "east"
+		_: return ""
 
 func toggle_door(direction: String, visual: ColorRect, blocker_collision: CollisionShape2D):
 	"""Toggle door open/closed state"""
@@ -247,6 +275,13 @@ func toggle_door(direction: String, visual: ColorRect, blocker_collision: Collis
 	
 	# Update collision
 	blocker_collision.disabled = is_open
+	
+	# Synchronize the connected door in the other room
+	if connections.has(direction):
+		var connected_room = connections[direction]
+		var opposite_direction = _get_opposite_direction(direction)
+		connected_room.set_door_state(opposite_direction, is_open)
+		print("  Synchronized ", opposite_direction, " door in room ", connected_room.room_id)
 	
 	door_toggled.emit(self, direction, is_open)
 
