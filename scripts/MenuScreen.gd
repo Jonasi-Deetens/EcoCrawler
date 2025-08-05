@@ -1,38 +1,84 @@
 extends Control
 
-# Menu screen script for EcoCrawler
-# Handles button interactions and scene transitions
+# Menu Screen - Main orchestrator for the EcoCrawler menu
+# Single responsibility: Coordinate between specialized menu components
+
+@onready var button_manager: Control = $MenuButtonManager
+@onready var particle_manager: Node2D = $ParticleEffects
+@onready var animation_manager: Node = $MenuAnimationManager
 
 func _ready():
-	# Connect button signals when the scene loads
-	$VBoxContainer/StartButton.pressed.connect(_on_start_button_pressed)
-	$VBoxContainer/OptionsButton.pressed.connect(_on_options_button_pressed)
-	$VBoxContainer/QuitButton.pressed.connect(_on_quit_button_pressed)
+	# Wait one frame to ensure all managers are ready
+	await get_tree().process_frame
 	
-	# Set focus to the start button for keyboard navigation
-	$VBoxContainer/StartButton.grab_focus()
+	print("MenuScreen: Initializing managers...")
+	print("Button manager: ", button_manager)
+	print("Particle manager: ", particle_manager)
+	print("Animation manager: ", animation_manager)
+	
+	# Connect signals from specialized managers
+	button_manager.button_pressed.connect(_on_button_pressed)
+	button_manager.button_hovered.connect(_on_button_hovered)
+	animation_manager.animation_completed.connect(_on_animation_completed)
+	
+	# Start particle effects
+	print("Starting particle effects...")
+	particle_manager.start_particle_systems()
+	
+	# Start title animation
+	print("Starting title animation...")
+	animation_manager.start_title_glow()
 
-func _on_start_button_pressed():
-	print("Starting dungeon crawl...")
+func _on_button_pressed(button_name: String):
+	"""Handle button press events from button manager"""
+	match button_name:
+		"start":
+			_handle_start_game()
+		"tutorial":
+			_handle_tutorial()
+		"options":
+			_handle_options()
+		"quit":
+			_handle_quit()
+
+func _on_button_hovered(button_name: String):
+	"""Handle button hover events from button manager"""
+	# Get button position for particle effects
+	var button = button_manager.get_button_by_name(button_name)
+	if button:
+		var button_center = button.global_position + button.size / 2
+		particle_manager.create_particle_burst(button_center)
+		
+		# Trigger button animation
+		animation_manager.animate_button_hover(button)
+
+func _on_animation_completed(_animation_name: String):
+	"""Handle animation completion events"""
+	# Could be used for additional effects or state management
+	pass
+
+func _handle_start_game():
+	"""Handle start game button press"""
+	# Create particle burst effect
+	var start_button = button_manager.get_button_by_name("start")
+	if start_button:
+		var button_center = start_button.global_position + start_button.size / 2
+		particle_manager.create_particle_burst(button_center)
+		animation_manager.animate_button_click(start_button)
+	
+	# Transition to the dungeon
 	get_tree().change_scene_to_file("res://scenes/DungeonRoom.tscn")
 
-func _on_options_button_pressed():
-	print("Opening options...")
-	# TODO: Open options menu
-	# get_tree().change_scene_to_file("res://scenes/Options.tscn")
+func _handle_tutorial():
+	"""Handle tutorial button press"""
+	# TODO: Implement tutorial
+	print("Tutorial - coming soon!")
 
-func _on_quit_button_pressed():
-	print("Quitting game...")
-	get_tree().quit()
+func _handle_options():
+	"""Handle options button press"""
+	# TODO: Implement options menu
+	print("Options menu - coming soon!")
 
-# Handle keyboard input
-func _input(event):
-	if event.is_action_pressed("ui_accept"):
-		# Enter key pressed - trigger focused button
-		var focused = get_viewport().gui_get_focus_owner()
-		if focused and focused is Button:
-			focused.pressed.emit()
-	
-	elif event.is_action_pressed("ui_cancel"):
-		# Escape key pressed - quit game
-		_on_quit_button_pressed() 
+func _handle_quit():
+	"""Handle quit button press"""
+	get_tree().quit() 

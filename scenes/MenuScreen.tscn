@@ -1,14 +1,99 @@
-[gd_scene load_steps=2 format=3 uid="uid://ds3v8guumt5nv"]
+[gd_scene load_steps=10 format=3 uid="uid://bqshgeeogskmj"]
 
-[ext_resource type="Script" uid="uid://cyliu7s8pudd7" path="res://scripts/MenuScreen.gd" id="1_0x8m3"]
+[ext_resource type="Script" path="res://scripts/MenuScreen.gd" id="1_0x8m3"]
+[ext_resource type="Theme" path="res://themes/menu_theme.tres" id="2_0x8m4"]
+[ext_resource type="Script" path="res://scripts/MenuButtonManager.gd" id="3_0x8m5"]
+[ext_resource type="Script" path="res://scripts/MenuParticleManager.gd" id="4_0x8m6"]
+[ext_resource type="Script" path="res://scripts/MenuAnimationManager.gd" id="5_0x8m7"]
+
+[sub_resource type="Gradient" id="Gradient_1"]
+colors = PackedColorArray(1, 0.8, 0.2, 1, 1, 0.6, 0.1, 0.8, 0.8, 0.4, 0.1, 0.6, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_1"]
+gradient = SubResource("Gradient_1")
+
+[sub_resource type="Gradient" id="Gradient_2"]
+colors = PackedColorArray(0.9, 0.7, 0.3, 0.8, 0.7, 0.5, 0.2, 0.6, 0.5, 0.3, 0.1, 0.4, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_2"]
+gradient = SubResource("Gradient_2")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_1"]
+emission_shape = 1
+emission_sphere_radius = 600.0
+particle_flag_disable_z = true
+direction = Vector3(0, 1, 0)
+spread = 180.0
+gravity = Vector3(0, -1, 0)
+initial_velocity_min = 1.0
+initial_velocity_max = 3.0
+angular_velocity_min = -0.05
+angular_velocity_max = 0.05
+linear_accel_min = -0.5
+linear_accel_max = 0.5
+damping_min = 0.3
+damping_max = 0.5
+angle_min = 0.0
+angle_max = 360.0
+scale_min = 1.0
+scale_max = 3.0
+color_ramp = SubResource("GradientTexture1D_1")
+turbulence_enabled = true
+turbulence_noise_strength = 0.1
+turbulence_noise_scale = 4.0
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_2"]
+emission_shape = 1
+emission_sphere_radius = 800.0
+particle_flag_disable_z = true
+direction = Vector3(0, 1, 0)
+spread = 360.0
+gravity = Vector3(0, -0.2, 0)
+initial_velocity_min = 0.5
+initial_velocity_max = 1.5
+angular_velocity_min = -0.02
+angular_velocity_max = 0.02
+linear_accel_min = -0.2
+linear_accel_max = 0.2
+damping_min = 0.3
+damping_max = 0.5
+angle_min = 0.0
+angle_max = 360.0
+scale_min = 0.5
+scale_max = 1.5
+color_ramp = SubResource("GradientTexture1D_2")
+turbulence_enabled = true
+turbulence_noise_strength = 0.05
+turbulence_noise_scale = 6.0
+
+[sub_resource type="Animation" id="Animation_1"]
+resource_name = "title_glow"
+length = 3.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("../MainContainer/TitleContainer/GameTitle:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.5, 3),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(0.8, 0.7, 0.5, 1), Color(1, 0.9, 0.7, 1), Color(0.8, 0.7, 0.5, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_1"]
+_data = {
+"title_glow": SubResource("Animation_1")
+}
 
 [node name="MenuScreen" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+theme = ExtResource("2_0x8m4")
 script = ExtResource("1_0x8m3")
 
 [node name="Background" type="ColorRect" parent="."]
@@ -16,11 +101,46 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.0784314, 0.156863, 0.0784314, 1)
+color = Color(0.05, 0.02, 0.01, 1)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="BackgroundPattern" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.08, 0.04, 0.02, 0.3)
+
+[node name="Vignette" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.4)
+
+[node name="ParticleEffects" type="Node2D" parent="."]
+script = ExtResource("4_0x8m6")
+
+[node name="FloatingParticles" type="GPUParticles2D" parent="ParticleEffects"]
+position = Vector2(576, 324)
+emitting = true
+amount = 30
+lifetime = 12.0
+one_shot = false
+preprocess = 0.0
+process_material = SubResource("ParticleProcessMaterial_1")
+texture = SubResource("GradientTexture1D_1")
+
+[node name="AmbientParticles" type="GPUParticles2D" parent="ParticleEffects"]
+position = Vector2(576, 324)
+emitting = true
+amount = 25
+lifetime = 10.0
+one_shot = false
+preprocess = 0.0
+process_material = SubResource("ParticleProcessMaterial_2")
+texture = SubResource("GradientTexture1D_2")
+
+[node name="MainContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -28,28 +148,96 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = -150.0
+offset_top = -250.0
 offset_right = 200.0
-offset_bottom = 150.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_bottom = 250.0
 
-[node name="Title" type="Label" parent="VBoxContainer"]
+[node name="TitleContainer" type="VBoxContainer" parent="MainContainer"]
 layout_mode = 2
-text = "EcoCrawler"
+
+[node name="GameTitle" type="Label" parent="MainContainer/TitleContainer"]
+layout_mode = 2
+text = "ECO CRAWLER"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="StartButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 50)
+[node name="TitleSubtitle" type="Label" parent="MainContainer/TitleContainer"]
 layout_mode = 2
-text = "Start Game"
+text = "Dungeon Ecosystem Explorer"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="OptionsButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 50)
+[node name="HSeparator" type="HSeparator" parent="MainContainer"]
 layout_mode = 2
+custom_minimum_size = Vector2(0, 20)
+
+[node name="ButtonContainer" type="VBoxContainer" parent="MainContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 300)
+
+[node name="StartButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 50)
+text = "Enter the Dungeon"
+
+[node name="TutorialButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 50)
+text = "How to Play"
+
+[node name="OptionsButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 50)
 text = "Options"
 
-[node name="QuitButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 50)
+[node name="QuitButton" type="Button" parent="MainContainer/ButtonContainer"]
 layout_mode = 2
-text = "Quit"
+custom_minimum_size = Vector2(0, 50)
+text = "Exit Game"
+
+[node name="FooterText" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -40.0
+offset_right = 150.0
+offset_bottom = -10.0
+text = "Every door you open or close affects the dungeon's ecosystem"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="VersionLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -80.0
+offset_top = -30.0
+offset_right = -10.0
+offset_bottom = -10.0
+text = "v1.0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="MenuButtonManager" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("3_0x8m5")
+
+[node name="MenuAnimationManager" type="Node" parent="."]
+script = ExtResource("5_0x8m7")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="MenuAnimationManager"]
+libraries = {
+"": SubResource("AnimationLibrary_1")
+}
+autoplay = "title_glow"
