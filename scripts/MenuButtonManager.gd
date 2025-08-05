@@ -106,7 +106,10 @@ func _handle_arrow_navigation(event):
 			if buttons[check_index] and buttons[check_index].visible and not buttons[check_index].disabled:
 				new_index = check_index
 				break
-		print("Moving UP to index: ", new_index, " - ", buttons[new_index].name if buttons[new_index] else "NULL")
+		var button_name = "NULL"
+		if buttons[new_index]:
+			button_name = buttons[new_index].name
+		print("Moving UP to index: ", new_index, " - ", button_name)
 	elif event.is_action_pressed("ui_down"):
 		# Find next valid button
 		new_index = current_index
@@ -115,7 +118,10 @@ func _handle_arrow_navigation(event):
 			if buttons[check_index] and buttons[check_index].visible and not buttons[check_index].disabled:
 				new_index = check_index
 				break
-		print("Moving DOWN to index: ", new_index, " - ", buttons[new_index].name if buttons[new_index] else "NULL")
+		var button_name = "NULL"
+		if buttons[new_index]:
+			button_name = buttons[new_index].name
+		print("Moving DOWN to index: ", new_index, " - ", button_name)
 	
 	if buttons[new_index] and buttons[new_index].visible and not buttons[new_index].disabled:
 		buttons[new_index].grab_focus()

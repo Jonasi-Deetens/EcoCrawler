@@ -1,0 +1,48 @@
+[gd_scene load_steps=6 format=3 uid="uid://b8x7y6z5w4v3u2"]
+
+[ext_resource type="Script" path="res://scripts/Hometown.gd" id="1_0x8m3"]
+[ext_resource type="Script" path="res://scripts/Player.gd" id="2_0x8m4"]
+[ext_resource type="Script" path="res://scripts/HometownUI.gd" id="3_0x8m5"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(150, 150)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2"]
+size = Vector2(20, 20)
+
+[node name="Hometown" type="Node2D"]
+script = ExtResource("1_0x8m3")
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1152.0
+offset_bottom = 648.0
+color = Color(0.2, 0.4, 0.1, 1)
+
+[node name="DungeonEntrance" type="ColorRect" parent="."]
+offset_left = 900.0
+offset_top = 300.0
+offset_right = 1050.0
+offset_bottom = 450.0
+color = Color(0.1, 0.1, 0.1, 1)
+
+[node name="DungeonEntranceArea" type="Area2D" parent="DungeonEntrance"]
+script = ExtResource("3_0x8m5")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DungeonEntrance/DungeonEntranceArea"]
+shape = SubResource("RectangleShape2D_1")
+
+[node name="Player" type="CharacterBody2D" parent="."]
+position = Vector2(576, 500)
+script = ExtResource("2_0x8m4")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("RectangleShape2D_2")
+
+[node name="Sprite2D" type="ColorRect" parent="Player"]
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+color = Color(0.2, 0.6, 0.8, 1)
+
+[node name="Camera2D" type="Camera2D" parent="Player"] 

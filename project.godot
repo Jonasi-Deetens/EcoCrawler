@@ -11,9 +11,9 @@ config_version=5
 [application]
 
 config/name="EcoCrawler"
+run/main_scene="res://scenes/MenuScreen.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://assets/textures/icon.svg"
-run/main_scene="res://scenes/MenuScreen.tscn"
 
 [rendering]
 

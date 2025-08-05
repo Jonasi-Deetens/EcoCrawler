@@ -66,8 +66,8 @@ func _handle_start_game():
 		particle_manager.create_particle_burst(button_center)
 		animation_manager.animate_button_click(start_button)
 	
-	# Transition to the dungeon
-	get_tree().change_scene_to_file("res://scenes/DungeonRoom.tscn")
+	# Transition to the hometown
+	get_tree().change_scene_to_file("res://scenes/Hometown.tscn")
 
 func _handle_tutorial():
 	"""Handle tutorial button press"""
