@@ -1,123 +1,182 @@
 extends Node
 
-# DungeonManager - handles only dungeon layout and room transitions
-# Single responsibility: Dungeon structure and navigation
+# DungeonManager - handles multi-floor dungeon layout and management
+# Single responsibility: Dungeon structure, floor generation, and navigation
 
-signal room_changed(room_id: String)
+signal room_changed(room)
+signal player_moved_to_room(room)
+signal floor_changed(floor)
+signal player_changed_floor(from_floor, to_floor)
 
-var current_room_id = "room_1"
-var room_data = {}
+var floors: Dictionary = {}  # floor_number -> FloorInstance
+var current_floor = null  # FloorInstance
+var current_room = null  # RoomInstance
+var player: CharacterBody2D
+
+# Dungeon configuration
+var total_floors: int = 5
+var floor_themes: Array[String] = ["standard", "forest", "cave", "desert", "mystical"]
+var floor_spacing: float = 10000.0  # Vertical spacing between floors
 
 func _ready():
-	_initialize_room_data()
+	call_deferred("_generate_multi_floor_dungeon")
 
-func _initialize_room_data():
-	# Define the dungeon layout - data only, no logic
-	room_data = {
-		"room_1": {
-			"exits": {
-				"north": "room_2",
-				"south": "room_3", 
-				"east": "room_4",
-				"west": null
-			},
-			"player_spawn": Vector2(576, 324)
-		},
-		"room_2": {
-			"exits": {
-				"north": null,
-				"south": "room_1",
-				"east": "room_5",
-				"west": null
-			},
-			"player_spawn": Vector2(576, 598)
-		},
-		"room_3": {
-			"exits": {
-				"north": "room_1",
-				"south": null,
-				"east": "room_6",
-				"west": null
-			},
-			"player_spawn": Vector2(576, 50)
-		},
-		"room_4": {
-			"exits": {
-				"north": "room_5",
-				"south": "room_6",
-				"east": null,
-				"west": "room_1"
-			},
-			"player_spawn": Vector2(50, 324)
-		},
-		"room_5": {
-			"exits": {
-				"north": null,
-				"south": "room_4",
-				"east": null,
-				"west": "room_2"
-			},
-			"player_spawn": Vector2(1102, 324)
-		},
-		"room_6": {
-			"exits": {
-				"north": "room_4",
-				"south": null,
-				"east": null,
-				"west": "room_3"
-			},
-			"player_spawn": Vector2(1102, 324)
-		}
-	}
-
-func get_room_data(room_id: String) -> Dictionary:
-	"""Get data for a specific room"""
-	return room_data.get(room_id, {})
-
-func get_current_room_data() -> Dictionary:
-	"""Get data for the current room"""
-	return get_room_data(current_room_id)
-
-func can_exit_direction(direction: String) -> bool:
-	"""Check if there's an exit in the given direction"""
-	var current_room = get_current_room_data()
-	return current_room.get("exits", {}).get(direction) != null
-
-func get_next_room_id(direction: String) -> String:
-	"""Get the room ID for the given exit direction"""
-	var current_room = get_current_room_data()
-	return current_room.get("exits", {}).get(direction, "")
-
-func change_room(direction: String) -> bool:
-	"""Change to the room in the given direction. Returns success status."""
-	var next_room_id = get_next_room_id(direction)
+func _generate_multi_floor_dungeon():
+	"""Generate a multi-floor dungeon with varied themes"""
 	
-	if next_room_id != "":
-		current_room_id = next_room_id
-		room_changed.emit(current_room_id)
-		return true
-	return false
+	print("Generating ", total_floors, " floor dungeon...")
+	
+	# Create floors
+	for floor_num in range(1, total_floors + 1):
+		var theme = floor_themes[(floor_num - 1) % floor_themes.size()]
+		var floor_y_pos = (floor_num - 1) * floor_spacing
+		var floor_pos = Vector2(0, floor_y_pos)
+		
+		var floor_instance = FloorInstance.new(floor_num, floor_pos, theme)
+		floors[floor_num] = floor_instance
+		get_parent().add_child.call_deferred(floor_instance)
+		
+		# Floor signals are handled directly by DungeonManager
+		
+		print("Created floor ", floor_num, " (", theme, ") at ", floor_pos)
+	
+	# Connect floors vertically
+	_connect_floors()
+	
+	# Set starting floor and room
+	current_floor = floors[1]
+	current_floor.set_active(true)
+	
+	# Find the first room on the starting floor
+	if current_floor.rooms.size() > 0:
+		var first_room_id = current_floor.rooms.keys()[0]
+		current_room = current_floor.get_room(first_room_id)
+		current_room.set_active(true)
+		print("Starting room set to: ", first_room_id, " and activated")
+	else:
+		print("ERROR: No rooms found on starting floor!")
+	
+	print("Multi-floor dungeon generated with ", floors.size(), " floors")
 
-func get_spawn_position(direction: String) -> Vector2:
-	"""Get the spawn position for entering from a specific direction"""
-	# Exit positions: North(576,50), South(576,598), East(1102,324), West(50,324)
-	# Floor area: X(50-1102), Y(50-598) - 50px offset from exits to stay in playable area
+func _connect_floors():
+	"""Connect floors vertically through stair rooms"""
+	for floor_num in floors:
+		var floor_instance = floors[floor_num]
+		
+		# Connect to floor above
+		if floors.has(floor_num + 1):
+			floor_instance.connect_to_floor_above(floors[floor_num + 1])
+			print("Connected floor ", floor_num, " to floor ", floor_num + 1)
+		
+		# Connect to floor below
+		if floors.has(floor_num - 1):
+			floor_instance.connect_to_floor_below(floors[floor_num - 1])
+
+func _get_opposite_direction(direction: String) -> String:
+	"""Get the opposite direction"""
 	match direction:
-		"north":
-			# Entering from north door, spawn on south side of room
-			return Vector2(576, 548)  # 50 pixels below south exit, within floor
-		"south":
-			# Entering from south door, spawn on north side of room
-			return Vector2(576, 100)  # 50 pixels above north exit, within floor
-		"east":
-			# Entering from east door, spawn on west side of room
-			return Vector2(100, 324)  # 50 pixels right of west exit, within floor
-		"west":
-			# Entering from west door, spawn on east side of room
-			return Vector2(1052, 324) # 50 pixels left of east exit, within floor
-		_:
-			return Vector2(576, 324)  # Default center position
+		"north": return "south"
+		"south": return "north"
+		"east": return "west"
+		"west": return "east"
+		_: return ""
+
+func set_player(player_node: CharacterBody2D):
+	"""Set the player reference"""
+	player = player_node
+	# Position player in starting room on starting floor
+	if current_room:
+		var target_pos = current_room.room_position + Vector2(576, 324)
+		player.position = target_pos
+		print("Player positioned at: ", target_pos, " (room pos: ", current_room.room_position, ")")
+	else:
+		print("ERROR: No current room when setting player position!")
+
+func get_current_room():
+	"""Get the current room instance"""
+	return current_room
+
+func get_current_floor():
+	"""Get the current floor instance"""
+	return current_floor
+
+func get_floor(floor_number: int):
+	"""Get a specific floor instance"""
+	return floors.get(floor_number)
+
+func get_room_on_floor(floor_number: int, room_id: String):
+	"""Get a specific room on a specific floor"""
+	var floor_instance = get_floor(floor_number)
+	if floor_instance:
+		return floor_instance.get_room(room_id)
+	return null
 
 func get_room_number() -> String:
-	"""Get the room number as a string"""
-	return current_room_id.split("_")[1] 
+	"""Get the current room number as a string"""
+	if current_room:
+		var parts = current_room.room_id.split("_")
+		if parts.size() >= 3:
+			return parts[2]  # f1_room_1 -> "1"
+	return "1"
+
+func get_floor_number() -> int:
+	"""Get the current floor number"""
+	if current_floor:
+		return current_floor.floor_number
+	return 1
+
+func change_floor(target_floor_number: int, target_room_id: String = "") -> bool:
+	"""Change to a different floor"""
+	if not floors.has(target_floor_number):
+		return false
+	
+	var old_floor = current_floor
+	var new_floor = floors[target_floor_number]
+	
+	# Deactivate old floor
+	if old_floor:
+		old_floor.set_active(false)
+	
+	# Activate new floor
+	current_floor = new_floor
+	current_floor.set_active(true)
+	
+	# Set target room or default to first room
+	if target_room_id != "" and new_floor.rooms.has(target_room_id):
+		current_room = new_floor.get_room(target_room_id)
+	elif new_floor.rooms.size() > 0:
+		var first_room_id = new_floor.rooms.keys()[0]
+		current_room = new_floor.get_room(first_room_id)
+	else:
+		print("ERROR: No rooms found on floor ", target_floor_number)
+		return false
+	
+	# Move player to new floor/room
+	if player and current_room:
+		player.position = current_room.room_position + Vector2(576, 324)
+	
+	# Emit signals
+	floor_changed.emit(new_floor)
+	if old_floor:
+		player_changed_floor.emit(old_floor, new_floor)
+	
+	print("Changed from floor ", old_floor.floor_number if old_floor else 0, " to floor ", new_floor.floor_number)
+	return true
+
+# Signal handlers
+func _on_room_entered(room):
+	"""Handle room entry"""
+	current_room = room
+	room_changed.emit(room)
+	player_moved_to_room.emit(room)
+	print("Entered room: ", room.room_id)
+
+func _on_room_exited(room):
+	"""Handle room exit"""
+	print("Exited room: ", room.room_id)
+
+func _on_door_toggled(room, direction: String, is_open: bool):
+	"""Handle door toggle"""
+	print("Door ", direction, " in room ", room.room_id, " is now ", "OPEN" if is_open else "CLOSED")
+
+ 

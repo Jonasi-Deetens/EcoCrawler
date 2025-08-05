@@ -16,6 +16,10 @@ func update_room_label(room_number: String):
 	"""Update the room label with current room number"""
 	room_label.text = "Room " + room_number
 
+func update_floor_info(floor_number: int, floor_theme: String, room_number: String):
+	"""Update the room label with floor and room information"""
+	room_label.text = "Floor " + str(floor_number) + " (" + floor_theme.capitalize() + ") - Room " + room_number
+
 func _on_back_button_pressed():
 	"""Handle back button press"""
 	back_to_menu_requested.emit()
